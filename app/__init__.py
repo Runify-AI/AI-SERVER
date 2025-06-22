@@ -3,6 +3,7 @@ from flask_cors import CORS
 from app.prefix_middleware import PrefixMiddleware
 from app.views.test_views import test_ns
 from app.views.route_views import route_ns
+from app.views.statics_views import statics_ns
 
 from flask_restx import Api, Resource, reqparse
 
@@ -25,6 +26,6 @@ def create_app():
     # 라우터 등록하기
     api.add_namespace(test_ns, path='/test')
     api.add_namespace(route_ns, path="/route")
-    # statics_bp
+    api.add_namespace(statics_ns,path="/statics")
     
     return app
