@@ -195,7 +195,7 @@ class UserInput:
         self.start_address = start_address,
         self.end_address = end_address,
         self.start_location = geocode(self.start_address)
-        self.end_location = geocode(self.end_address) if end_address != "" else null
+        self.end_location = geocode(self.end_address) if end_address != "" else None
         # self.arrival_time = arrival_time
         # self.preferences = preferences
 
