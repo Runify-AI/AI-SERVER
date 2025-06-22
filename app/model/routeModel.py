@@ -5,23 +5,23 @@ route_ns = Namespace('route', description='route api')
 feedback_model = route_ns.model('FeedBack',{
     'main':fields.String(example="초반과 후반 속도 차이가 있어요"),
     'advice':fields.String(example="다음엔 초반 속도를 조절해보세요"),
-    "early_speed_deviation":fields.Integer(example=78)
+    "early_speed_deviation":fields.Float(example=78)
 })
 
 # 러닝 히스토리
 history_model = route_ns.model('History', {
     'routeId': fields.Integer(required=False, example=1),
     'date': fields.String(required=True, example="2025-06-22"),
-    'distance': fields.Integer(required=True, example=5000),
+    'distance': fields.Float(required=True, example=5000),
     'averagePace': fields.Float(required=True, example=5.2),
     'effortLevel': fields.Integer(required=True, example=3),
-    'stop_count': fields.Integer(required=True, example=3),
-    'feedback' : fields.Nested(feedback_model,example= {
+    'stopCount': fields.Integer(required=True, example=3),
+    'feedbackSummary' : fields.Nested(feedback_model,example= {
                 "main": "초반과 후반 속도 차이가 있어요.",  
                 "advice": "다음엔 초반 속도를 더 조절해보세요.",
                 "early_speed_deviation": 1.2 
             }),
-    'focus_score' : fields.Float(requiredd=True,example=78),
+    'focusScore' : fields.Float(requiredd=True,example=78),
     'comment': fields.String(required=True, example="Good run!"),
 })
 
@@ -73,13 +73,13 @@ request_model = route_ns.model('RouteRequest', {
             "distance": 3.21,
             "duration":25,
             "averagePace": 5.2,
-            "stop_count": 3,
-            "feedback_summary": {
+            "stopCount": 3,
+            "feedbackSummary": {
                 "main": "초반과 후반 속도 차이가 있어요.",  
                 "advice": "다음엔 초반 속도를 더 조절해보세요.",
-                "early_speed_deviation": 1.2 
+                "early_speed_deviation": 1
             },
-            "focus_score": 78,
+            "focusScore": 78,
             "effortLevel": 3,
             "comment": "Good run!",
         }
