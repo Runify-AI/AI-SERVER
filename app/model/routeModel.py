@@ -2,55 +2,27 @@ from flask_restx import Namespace, fields
 
 route_ns = Namespace('route', description='route api')
 
-# 위치 정보
-location_model = route_ns.model('Location', {
-    'latitude': fields.Float(required=True, description='위도', example=35.8310738),
-    'longitude': fields.Float(required=True, description='경도', example=128.7495178)
-})
-
-# 러닝 트랙 포인트
-running_track_point_model = route_ns.model('RunningTrackPoint', {
-    'distance': fields.Float(required=True, example=0.1),
-    'elapsedTime': fields.Float(required=True, example=300.0),
-    'typeEta': fields.Float(required=True, example=0.1),
-    'typePace': fields.Float(required=True, example=0.1),
-    'typeStop': fields.Float(required=True, example=0.1),
-    'location': fields.Nested(location_model, required=True, example={
-        "latitude": 35.8310738,
-        "longitude": 128.7495178
-    }),
-    'pace': fields.Float(required=True, example=5.0),
-    'timeStamp': fields.Float(required=True, example=1624356000.0)
+feedback_model = route_ns.model('FeedBack',{
+    'main':fields.String(example="초반과 후반 속도 차이가 있어요"),
+    'advice':fields.String(example="다음엔 초반 속도를 조절해보세요"),
+    "early_speed_deviation":fields.Integer(example=78)
 })
 
 # 러닝 히스토리
 history_model = route_ns.model('History', {
     'routeId': fields.Integer(required=False, example=1),
-    'runId': fields.String(required=False, example="run123"),
     'date': fields.String(required=True, example="2025-06-22"),
-    'totalDistance': fields.Integer(required=True, example=5000),
+    'distance': fields.Integer(required=True, example=5000),
     'averagePace': fields.Float(required=True, example=5.2),
     'effortLevel': fields.Integer(required=True, example=3),
+    'stop_count': fields.Integer(required=True, example=3),
+    'feedback' : fields.Nested(feedback_model,example= {
+                "main": "초반과 후반 속도 차이가 있어요.",  
+                "advice": "다음엔 초반 속도를 더 조절해보세요.",
+                "early_speed_deviation": 1.2 
+            }),
+    'focus_score' : fields.Float(requiredd=True,example=78),
     'comment': fields.String(required=True, example="Good run!"),
-    'runningTrackPoint': fields.List(
-        fields.Nested(running_track_point_model),
-        required=True,
-        example=[
-            {
-                "distance": 0.1,
-                "elapsedTime": 300.0,
-                "typeEta": 0.1,
-                "typePace": 0.1,
-                "typeStop": 0.1,
-                "location": {
-                    "latitude": 35.8310738,
-                    "longitude": 128.7495178
-                },
-                "pace": 5.0,
-                "timeStamp": 1624356000.0
-            }
-        ]
-    )
 })
 
 # 선호도
@@ -97,27 +69,19 @@ request_model = route_ns.model('RouteRequest', {
     'history': fields.List(fields.Nested(history_model), required=True, example=[
         {
             "routeId": 1,
-            "runId": "run123",
             "date": "2025-06-22",
-            "totalDistance": 5000,
+            "distance": 3.21,
+            "duration":25,
             "averagePace": 5.2,
+            "stop_count": 3,
+            "feedback_summary": {
+                "main": "초반과 후반 속도 차이가 있어요.",  
+                "advice": "다음엔 초반 속도를 더 조절해보세요.",
+                "early_speed_deviation": 1.2 
+            },
+            "focus_score": 78,
             "effortLevel": 3,
             "comment": "Good run!",
-            "runningTrackPoint": [
-                {
-                    "distance": 0.1,
-                    "elapsedTime": 300.0,
-                    "typeEta": 0.1,
-                    "typePace": 0.1,
-                    "typeStop": 0.1,
-                    "location": {
-                        "latitude": 35.8310738,
-                        "longitude": 128.7495178
-                    },
-                    "pace": 5.0,
-                    "timeStamp": 1624356000.0
-                }
-            ]
         }
     ]),
     'weather': fields.Nested(weather_model, required=True, example={

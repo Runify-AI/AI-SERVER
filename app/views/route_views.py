@@ -7,7 +7,7 @@ from tests.data.DummyData import data
 from app.model.routeModel import route_ns,UserInput,request_model,response_model
 
 parser = reqparse.RequestParser()
-parser.add_argument('start_address',type=str,help='출발지 주소',default="영남대학교")
+parser.add_argument('start_address',type=str,help='출발지 주소',default="영남대학교",required=True)
 parser.add_argument('end_address',type=str,help='도착지 주소',default="반월당",required=False)
 
 @route_ns.route('/')
