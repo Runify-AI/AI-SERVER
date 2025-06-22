@@ -11,9 +11,13 @@ def build_walk_graph(start: Tuple[float, float], end: Tuple[float, float], dist_
     """
     출발지-도착지를 중심으로 일정 거리 내 OSM 도보 그래프 생성
     """
+    
+    if end is None:
+        center_lat,center_lon = start
     # 중심점과 거리 계산
-    center_lat = (start[0] + end[0]) / 2
-    center_lon = (start[1] + end[1]) / 2
+    else:
+        center_lat = (start[0] + end[0]) / 2
+        center_lon = (start[1] + end[1]) / 2
 
     # OSM에서 도보 네트워크 다운로드
     G = ox.graph_from_point(

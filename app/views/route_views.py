@@ -8,7 +8,7 @@ from app.model.routeModel import route_ns,UserInput,request_model,response_model
 
 parser = reqparse.RequestParser()
 parser.add_argument('start_address',type=str,help='출발지 주소',default="영남대학교")
-parser.add_argument('end_address',type=str,help='도착지 주소',default="반월당")
+parser.add_argument('end_address',type=str,help='도착지 주소',default="반월당",required=False)
 
 @route_ns.route('/')
 class RouteResource(Resource):
@@ -25,7 +25,7 @@ class RouteResource(Resource):
 def getRoute(args,value):
     user_input =  UserInput(
         start_address = args["start_address"],
-        end_address = args["end_address"]
+        end_address = args["end_address"] | "",
     )
     # 2. 그래프 생성 + 라벨링 + 선호도 가중치 적용
     G = build_walk_graph(user_input.start_location,user_input.end_location)
