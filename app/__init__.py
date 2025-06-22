@@ -18,7 +18,6 @@ def create_app():
     app.wsgi_app = PrefixMiddleware(
         app.wsgi_app,
         prefix='/api/ai',
-        exclude_paths=['/api-docs', '/swaggerui', '/swagger.json']  # Swagger 관련 경로 제외
     )
     
     # 라우터 등록하기
