@@ -64,8 +64,9 @@ feedback_model = statics_ns.model('FeedBack',{
 static_model = statics_ns.model('Statics', {
     'distance': fields.Integer(required=True, example=0.41),
     'averagePace': fields.Float(required=True, example=4.5),
+    'dutration': fields.Float(required=True,example=50),
     'stopCount': fields.Integer(required=True, example=3),
-    'feedback' : fields.Nested(feedback_model,example= {
+    'feedbackSummary' : fields.Nested(feedback_model,example= {
                 "main": "초반과 후반 속도 차이가 있어요.",  
                 "advice": "다음엔 초반 속도를 더 조절해보세요.",
                 "early_speed_deviation": 1.2 
