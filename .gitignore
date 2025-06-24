@@ -35,3 +35,6 @@ migrations/
 
 # 기타
 *.log
+tests/경로 탐색.png
+tests/분포도.png
+tests/클러스터링.png

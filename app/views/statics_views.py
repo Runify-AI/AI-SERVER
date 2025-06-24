@@ -5,7 +5,7 @@ from app.model.staticModel import statics_ns,request_model,response_model
 @statics_ns.route('/')
 class StaticResource(Resource):
     @statics_ns.expect(request_model)
-    @statics_ns.marshal_with(response_model)
+    # @statics_ns.marshal_with(response_model)
     def post(self):
         return {"statics":getStatics(request.get_json()["history"])}
     
