@@ -1,4 +1,5 @@
 from flask_restx import Namespace, fields
+from numpy.f2py.crackfortran import requiredpattern
 
 route_ns = Namespace('route', description='route api')
 
@@ -34,7 +35,7 @@ preferences_model = route_ns.model('Preferences', {
 })
 
 # 유저 프로필
-user_profile_model = route_ns.model('UserProfile', {
+user_profile_model = route_ns.model('user_profile', {
     'runningType': fields.String(required=True, example="marathon"),
     'height': fields.Float(required=True, example=175.5),
     'weight': fields.Float(required=True, example=68.0),
@@ -47,23 +48,38 @@ user_profile_model = route_ns.model('UserProfile', {
 })
 
 # 날씨
-weather_model = route_ns.model('Weather', {
+weather_model = route_ns.model('weather', {
     'temperature': fields.Float(required=True, example=22.5),
     'humidity': fields.Integer(required=True, example=60),
     'condition': fields.String(required=True, example="Cloudy")
 })
 
+pos = route_ns.model('pos',{
+    "latitude" : fields.Float(required=True),
+    "longitude" : fields.Float(required=True),
+    "name"  : fields.String(required=False)
+})
+
+location_model = route_ns.model('location',{
+    'start' : fields.Nested(pos,required=True),
+    "end" : fields.Nested(pos,required=True)
+})
+
 # 최상위 요청 DTO
 request_model = route_ns.model('RouteRequest', {
-    'userProfile': fields.Nested(user_profile_model, required=True, example={
+    'location' : fields.Nested(location_model,required=True, example={
+        "start" :{"latitude" : 35.865403, "longitude" : 128.593636, "name" : "반월당"} ,
+        "end" : {"latitude" : 35.827883, "longitude" : 128.755046, "name" : "영남대학교"}
+    }),
+    'user_profile': fields.Nested(user_profile_model, required=True, example={
         "runningType": "marathon",
         "height": 175.5,
         "weight": 68.0,
         "preferences": {
-            "preferencePlace": ["park", "river"],
-            "preferenceRoute": ["scenic"],
-            "preferenceAvoid": ["hill"],
-            "preferenceEtc": ["morning"]
+            "preferencePlaces": ["PARK", "RIVER"],
+            "preferenceRoutes": ["FASTEST",],
+            "preferenceAvoids": ["HILL"],
+            "preferenceEtcs": ["PET","ACCESSIBLE"]
         }
     }),
     'history': fields.List(fields.Nested(history_model), required=True, example=[
@@ -94,14 +110,14 @@ request_model = route_ns.model('RouteRequest', {
 # 특성(feature) 하위 모델
 park_feature_model = route_ns.model('ParkFeature', {
     'count': fields.Integer,
-    'area': fields.Integer,
-    'ratio': fields.String
+    'area': fields.Float,
+    'ratio': fields.Float
 })
 
 river_feature_model = route_ns.model('RiverFeature', {
     'count': fields.Integer,
-    'area': fields.Integer,
-    'ratio': fields.String
+    'area': fields.Float,
+    'ratio': fields.Float
 })
 
 amenity_feature_model = route_ns.model('AmenityFeature', {
@@ -122,16 +138,18 @@ feture_model = route_ns.model('Feture', {
 
 # 추천(recommend) 모델
 recommend_model = route_ns.model('Recommend', {
-    'similarity': fields.Float,
     'pace_score': fields.Float,
     'final_score': fields.Float,
+    'preference_score' : fields.Float,
     'recommended_pace': fields.Float,
     'expected_time': fields.Integer
 })
 
 path_model = route_ns.model('Path', {
-    'path-id': fields.Integer,
-    'feture': fields.Nested(feture_model),
+    'pathId': fields.Integer,
+    'feature': fields.Nested(feture_model),
+    'distance' : fields.Float(),
+    'slope' : fields.Float(),
     'recommend': fields.Nested(recommend_model),
     'coord': fields.List(fields.List(fields.Float))
 })
@@ -153,8 +171,6 @@ class UserInput:
         self,
         start_address :str,
         end_address : str,
-        # arrival_time: str,  # "HH:MM" 형식으로 받음
-        # preferences: Dict[str, Union[str, list]]
     ):
         self.start_address = start_address,
         self.end_address = end_address,

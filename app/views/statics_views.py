@@ -1,6 +1,7 @@
 from flask import request
-from flask_restx import Resource,reqparse
-from app.model.staticModel import statics_ns,request_model,response_model
+from flask_restx import Resource
+from app.schemas.staticModel import statics_ns,request_model
+
 
 @statics_ns.route('/')
 class StaticResource(Resource):

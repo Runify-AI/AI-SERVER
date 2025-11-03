@@ -5,6 +5,10 @@ from shapely.geometry import LineString
 
 
 def coord_getLabel(coords):
+
+    if not coords or len(coords) < 2:
+        return None  # 또는 적절한 기본값
+
     # 1. LineString 생성 (coords는 (위도, 경도) 순서라고 가정)
     line = LineString([(lng, lat) for lat, lng in coords])
 
@@ -91,36 +95,18 @@ def coord_getLabel(coords):
         
     # features: ox.features_from_polygon 등으로 얻은 GeoDataFrame
 
-    # 1. 버스정류장 추출
-    if 'highway' in features.columns:
-        bus_stops = features[features['highway'] == 'bus_stop']
-        bus_stop_coords = [(geom.y, geom.x) for geom in bus_stops.geometry if geom.geom_type == 'Point']
-    else:
-        bus_stop_coords = []
-
-    # 2. 지하철 출입구 추출
-    if 'railway' in features.columns:
-        subway_entrances = features[features['railway'] == 'subway_entrance']
-        subway_coords = [(geom.y, geom.x) for geom in subway_entrances.geometry if geom.geom_type == 'Point']
-    else:
-        subway_coords = []
-
-    # 3. 합쳐서 반환
-    all_stops = bus_stop_coords + subway_coords
-
-
 
     # 7. 결과 출력
     summary = {
         "park": {
             "count": int(park_count),
             "area": float(park_area),
-            "ratio": f"{park_ratio:.2%}",
+            "ratio": float(park_ratio),
         },
         "river": {
             "count": int(river_count),
             "area": float(river_area),
-            "ratio": f"{river_ratio:.2%}",
+            "ratio": float(river_ratio),
         },
         "amenity": {
             "count": int(amenity_count),
@@ -131,4 +117,4 @@ def coord_getLabel(coords):
     }
 
     
-    return summary,all_stops
+    return summary
