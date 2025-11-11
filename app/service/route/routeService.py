@@ -3,9 +3,7 @@ from app.utils.route.graph import *
 from app.utils.route.label import *
 
 
-def getRoute(location):
-    start_location = location["start"]
-    end_location = location["end"]
+def getRoute(start_location,end_location=None):
     # 2. 그래프 생성 + 라벨링 + 선호도 가중치 적용
     G = build_walk_graph(start_location,end_location)
 

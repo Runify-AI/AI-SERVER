@@ -13,7 +13,7 @@ class RouteResource(Resource):
     def post(self):
         value = request.get_json()
         
-        paths = getRoute(value["location"])
+        paths = getRoute(value["startAddr"],value.get("endAddr"))
 
         print(paths[0])
         paths = recommend_paths(paths,value)

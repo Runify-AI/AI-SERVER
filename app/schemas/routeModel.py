@@ -60,17 +60,10 @@ pos = route_ns.model('pos',{
     "name"  : fields.String(required=False)
 })
 
-location_model = route_ns.model('location',{
-    'start' : fields.Nested(pos,required=True),
-    "end" : fields.Nested(pos,required=True)
-})
-
 # 최상위 요청 DTO
 request_model = route_ns.model('RouteRequest', {
-    'location' : fields.Nested(location_model,required=True, example={
-        "start" :{"latitude" : 35.865403, "longitude" : 128.593636, "name" : "반월당"} ,
-        "end" : {"latitude" : 35.827883, "longitude" : 128.755046, "name" : "영남대학교"}
-    }),
+    "startAddr" : fields.Nested(pos,required=True,example={"latitude" : 35.865403, "longitude" : 128.593636, "name" : "반월당"}),
+    "endAddr" : fields.Nested(pos,required=False,example={"latitude" : 35.827883, "longitude" : 128.755046, "name" : "영남대학교"}),
     'user_profile': fields.Nested(user_profile_model, required=True, example={
         "runningType": "marathon",
         "height": 175.5,
