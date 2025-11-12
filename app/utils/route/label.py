@@ -7,7 +7,7 @@ load_dotenv()  # .env 파일의 변수들을 환경변수로 로드
 api_key = os.getenv("google_api_key")
 
 
-def coord_getLabel_google(coords):
+def coord_getLabel(coords):
     if not coords:
         return None
 
