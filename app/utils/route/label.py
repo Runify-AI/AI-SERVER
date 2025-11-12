@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()  # .env 파일의 변수들을 환경변수로 로드
-api_key = os.getenv("google_api_key")
+api_key = "AIzaSyBdxKYNR_nT9lS75aRoVxMM9BQ_IBbG5eU"
+
 
 
 def coord_getLabel(coords):
@@ -22,10 +23,10 @@ def coord_getLabel(coords):
     types = ["park", "river", "crossing", "store", "cafe", "gym", "convenience_store"]
 
     summary = {
-        "park": {"count": 0},
-        "river": {"count": 0},
-        "cross": {"count": 0},
-        "amenity": {"count": 0}
+        "park": {"count": 0,"ratio":0,"area":0},
+        "river": {"count": 0,"ratio":0,"area":0},
+        "cross": {"count": 0,"ratio":0,"area":0},
+        "amenity": {"count": 0,"ratio":0,"area":0}
     }
 
     # 4️⃣ 각 type별 API 호출

@@ -114,11 +114,15 @@ river_feature_model = route_ns.model('RiverFeature', {
 })
 
 amenity_feature_model = route_ns.model('AmenityFeature', {
-    'count': fields.Integer
+    'count': fields.Integer,
+    'area': fields.Float,
+    'ratio': fields.Float
 })
 
 cross_feature_model = route_ns.model('CrossFeature', {
-    'count': fields.Integer
+    'count': fields.Integer,
+    'area': fields.Float,
+    'ratio': fields.Float
 })
 
 # Feture 모델 (오타 반영)
