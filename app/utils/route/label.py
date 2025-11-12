@@ -1,120 +1,76 @@
 import osmnx as ox
 import geopandas as gpd
 import pandas as pd
-from shapely.geometry import LineString
-
+from shapely.geometry import LineString, box
 
 def coord_getLabel(coords):
-
     if not coords or len(coords) < 2:
-        return None  # 또는 적절한 기본값
+        return None
 
-    # 1. LineString 생성 (coords는 (위도, 경도) 순서라고 가정)
+    # 1️⃣ LineString 생성
     line = LineString([(lng, lat) for lat, lng in coords])
+    buffer_dist_deg = 100 / 111000  # 약 100m
+    minx, miny, maxx, maxy = line.bounds
+    bbox = (maxy + buffer_dist_deg, miny - buffer_dist_deg, maxx + buffer_dist_deg, minx - buffer_dist_deg)  # (north, south, east, west)
 
-    # 2. 약 100m 버퍼 생성 (단위: degree → m로 환산)
-    buffer_polygon = line.buffer(100 / 111000)
-
-    # 3. GeoSeries로 변환 + 좌표계 설정 (WGS84)
-    buffer_gdf = gpd.GeoSeries([buffer_polygon], crs="EPSG:4326")
-        # 4. OSM 데이터 가져오기 (공원, 카페 등 다양한 피처)
+    # 2️⃣ 필요한 태그만 선택
     tags = {
-        'leisure': True,
-        'amenity': True,
-        'highway': True,
-        'incline': True,
-        'lit': True,
-        'bicycle': True,
-        'waterway':True,
-        'shop': True,
-        'railway' :True,
+        "leisure": ["park"],
+        "waterway": ["river"],
+        "highway": ["crossing"],
+        "shop": True,
     }
 
-    features = ox.features_from_polygon(buffer_gdf[0], tags=tags)
-    
-        # 5. 태그별 value 집계
-    tag_columns = ['highway', 'leisure', 'amenity', 'incline', 
-                   'lit', 'bicycle','waterway','shop','railway']
-    dfs = []
+    # 3️⃣ OSM 데이터 수집 (EPSG:4326)
+    try:
+        features = ox.features_from_bbox(*bbox, tags=tags)
+    except Exception as e:
+        print(f"OSM fetch error: {e}")
+        return None
 
-    for tag in tag_columns:
-        if tag in features.columns:
-            counts = features[tag].value_counts(dropna=True)
-            df = pd.DataFrame({
-                'tag': tag,
-                'value': counts.index,
-                'count': counts.values
-            })
-            dfs.append(df)
+    if features.empty:
+        return {
+            "park": {"count": 0, "area": 0, "ratio": 0},
+            "river": {"count": 0, "area": 0, "ratio": 0},
+            "amenity": {"count": 0},
+            "cross": {"count": 0},
+        }
 
-    tag_summary = pd.concat(dfs, ignore_index=True)
-
-    # print(tag_summary)
-
-
-
-    # 2. GeoDataFrame으로 버퍼 폴리곤 변환 및 UTM 변환 (면적 계산용)
+    # 4️⃣ 좌표계 변환 (UTM Zone 자동 감지)
+    utm_crs = ox.utils_geo.bearing.get_utm_crs(line.centroid.y, line.centroid.x)
+    features = features.to_crs(utm_crs)
+    line_utm = gpd.GeoSeries([line], crs="EPSG:4326").to_crs(utm_crs).iloc[0]
+    buffer_polygon = line_utm.buffer(100)  # 100m 버퍼
+    buffer_gdf = gpd.GeoSeries([buffer_polygon], crs=utm_crs)
     buffer_area = buffer_gdf.area.values[0]
 
-    # 3. 공원(park) 집계
-    park_area = 0
-    park_count = 0
-    park_ratio = 0
-    if 'leisure' in features.columns:
-        parks = features[features['leisure'] == 'park']
-        if not parks.empty:
-            parks_utm = parks.to_crs(epsg=32652)
-            intersection_areas = parks_utm.geometry.intersection(buffer_gdf[0])
-            park_area = intersection_areas.area.sum()
-            park_count = len(parks)
-            park_ratio = park_area / buffer_area if buffer_area > 0 else 0
+    # 5️⃣ 공원 (park)
+    parks = features[features.get("leisure") == "park"]
+    park_area, park_count = 0, 0
+    if not parks.empty:
+        parks = parks[parks.geometry.intersects(buffer_polygon)]
+        park_area = parks.intersection(buffer_polygon).area.sum()
+        park_count = len(parks)
+    park_ratio = park_area / buffer_area if buffer_area > 0 else 0
 
-    # 4. 하천(river) 집계
-    river_area = 0
-    river_count = 0
-    river_ratio = 0
+    # 6️⃣ 하천 (river)
+    rivers = features[features.get("waterway") == "river"]
+    river_area, river_count = 0, 0
+    if not rivers.empty:
+        rivers = rivers[rivers.geometry.intersects(buffer_polygon)]
+        river_area = rivers.intersection(buffer_polygon).length.sum()
+        river_count = len(rivers)
+    river_ratio = river_area / buffer_area if buffer_area > 0 else 0
 
-    if 'waterway' in features.columns:
-        rivers = features[features['waterway'] == 'river']
-        if not rivers.empty:
-            rivers_utm = rivers.to_crs(epsg=32652)
-            river_area = rivers_utm.geometry.length.sum()
-            river_count = len(rivers)
-            river_ratio = river_area / buffer_area if buffer_area > 0 else 0
+    # 7️⃣ 편의시설 (shop)
+    amenity_count = features["shop"].notna().sum() if "shop" in features.columns else 0
 
-    # 5. 편의시설(amenity) 개수 집계
-    amenity_count = 0
-    if 'shop' in features.columns:
-        amenity_count = features['shop'].notna().sum()
+    # 8️⃣ 횡단보도 (crossing)
+    cross_count = features["highway"].eq("crossing").sum() if "highway" in features.columns else 0
 
-
-    # 6. 횡단보도(crossing) 개수 집계
-    crossing_count = 0
-    if 'highway' in features.columns:
-        crossing_count = features['highway'].eq('crossing').sum()
-        
-    # features: ox.features_from_polygon 등으로 얻은 GeoDataFrame
-
-
-    # 7. 결과 출력
-    summary = {
-        "park": {
-            "count": int(park_count),
-            "area": float(park_area),
-            "ratio": float(park_ratio),
-        },
-        "river": {
-            "count": int(river_count),
-            "area": float(river_area),
-            "ratio": float(river_ratio),
-        },
-        "amenity": {
-            "count": int(amenity_count),
-        },
-        "cross": {
-            "count": int(crossing_count),
-        }
+    return {
+        "park": {"count": int(park_count), "area": float(park_area), "ratio": float(park_ratio)},
+        "river": {"count": int(river_count), "area": float(river_area), "ratio": float(river_ratio)},
+        "amenity": {"count": int(amenity_count)},
+        "cross": {"count": int(cross_count)},
     }
-
-    
-    return summary
