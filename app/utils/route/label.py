@@ -1,8 +1,11 @@
 import requests
 import statistics
-import dotenv
+from dotenv import load_dotenv
+import os
 
-api_key = dotenv.get("google_api_key")
+load_dotenv()  # .env 파일의 변수들을 환경변수로 로드
+api_key = os.getenv("google_api_key")
+
 
 def coord_getLabel_google(coords):
     if not coords:
