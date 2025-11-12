@@ -4,7 +4,7 @@ import dotenv
 
 api_key = dotenv.get("google_api_key")
 
-def coord_getLabel_google(coords, api_key):
+def coord_getLabel_google(coords):
     if not coords:
         return None
 
