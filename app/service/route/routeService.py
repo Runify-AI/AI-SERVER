@@ -24,7 +24,7 @@ def getRoute(start_location,end_location=None):
         start_coord=start_location,
         end_coord=end_location,
         waypoint_coords=kmeans_nodes,  # or cluster_nodes
-        max_paths=20
+        max_paths=10
     )
 
     print(f"🔀 생성된 경로 수: {len(nodes)}")

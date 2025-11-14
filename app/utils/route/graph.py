@@ -7,7 +7,7 @@ import networkx as nx
 from sklearn.cluster import KMeans
 
 
-def build_walk_graph(start: Dict[str, float | str], end: Dict[str, float | str], dist_buffer_m=1000) -> nx.MultiDiGraph:
+def build_walk_graph(start: Dict[str, float | str], end: Dict[str, float | str], dist_buffer_m=1500) -> nx.MultiDiGraph:
     """
     출발지-도착지를 중심으로 일정 거리 내 OSM 도보 그래프 생성
     """
